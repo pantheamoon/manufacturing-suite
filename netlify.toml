@@ -6,6 +6,11 @@
   node_bundler = "nft"
 
 [[redirects]]
-  from = "/.netlify/functions/db-query/*"
+  from = "/tables/*"
+  to = "/.netlify/functions/db-query/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/db/*"
   to = "/.netlify/functions/db-query/:splat"
   status = 200
