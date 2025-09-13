@@ -1,0 +1,11 @@
+[build]
+  functions = "netlify/functions"
+  publish = "."
+
+[functions]
+  node_bundler = "nft"
+
+[[redirects]]
+  from = "/.netlify/functions/db-query/*"
+  to = "/.netlify/functions/db-query/:splat"
+  status = 200
