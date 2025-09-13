@@ -3,14 +3,6 @@
 
 const { Client } = require('pg');
 
-// Neon connection configuration - Use Neon's auto-created variables
-const client = new Client({
-  connectionString: process.env.NETLIFY_DATABASE_URL || process.env.NETLIFY_DATABASE_URL_UNPOOLED || process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-
 exports.handler = async (event, context) => {
   // Enable CORS
   const headers = {
@@ -22,6 +14,14 @@ exports.handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers };
   }
+
+  // Create a new client for each request to avoid connection reuse issues
+  const client = new Client({
+    connectionString: process.env.NETLIFY_DATABASE_URL || process.env.NETLIFY_DATABASE_URL_UNPOOLED || process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  });
 
   try {
     await client.connect();
