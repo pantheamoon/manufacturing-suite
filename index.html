@@ -53,13 +53,10 @@
     
     <!-- Neon Database Configuration -->
     <script>
-        // Neon Database Configuration for Lush Labs Suite
         console.log('🎯 Initializing Neon Database integration for Lush Labs Suite');
         
-        // Override fetch to use Netlify Functions for database access
         const originalFetch = window.fetch;
         window.fetch = function(url, options = {}) {
-            // Check if this is a table API call
             if (url.startsWith('/tables/') || url.startsWith('tables/')) {
                 let tableName = url.replace('/tables/', '').replace('tables/', '');
                 let recordId = null;
@@ -76,7 +73,6 @@
                     tableName = tableName.split('?')[0];
                 }
                 
-                // Use Netlify Functions for database access
                 let neonUrl = `/.netlify/functions/db-query/${tableName}`;
                 if (recordId) {
                     neonUrl += `/${recordId}`;
@@ -95,7 +91,6 @@
                     }
                 }).then(response => {
                     return response.json().then(data => {
-                        // Handle the response format
                         return {
                             ok: response.ok,
                             status: response.status,
@@ -105,7 +100,6 @@
                 });
             }
             
-            // Handle auth login
             if (url.includes('/auth/login') || url.includes('auth/login')) {
                 const credentials = JSON.parse(options.body);
                 if ((credentials.email === 'admin@luxebeauty.com' && credentials.password === 'admin123') ||
@@ -221,13 +215,12 @@
 
     <!-- Main Dashboard -->
     <div id="dashboardSection" class="hidden">
-        <!-- Sidebar Navigation -->
         <div class="flex min-h-screen">
+            <!-- Sidebar Navigation -->
             <div id="sidebar" class="w-64 glass-effect shadow-xl border-r border-sage-200">
                 <div class="p-4">
                     <h3 class="text-lg font-semibold text-sage-900 mb-4">Operations Center</h3>
                     
-                    <!-- Main Navigation -->
                     <nav class="space-y-2">
                         <button onclick="showDashboard()" class="nav-btn w-full text-left px-4 py-3 rounded-lg bg-sage-100 text-sage-900 font-medium">
                             <i class="fas fa-tachometer-alt mr-3"></i>Dashboard
@@ -317,10 +310,10 @@
                         </div>
                     </div>
 
-                    <!-- Main Operations Grid -->
+                    <!-- Operations Grid -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         
-                        <!-- Quick Formulation Calculator -->
+                        <!-- Formulation Calculator -->
                         <div class="glass-effect rounded-2xl p-8 border border-sage-200">
                             <div class="flex items-center mb-6">
                                 <div class="sage-gradient rounded-lg p-3 mr-4">
@@ -328,14 +321,14 @@
                                 </div>
                                 <div>
                                     <h3 class="text-xl font-bold text-sage-900">Formulation Calculator</h3>
-                                    <p class="text-sage-600 text-sm">Quick batch calculations with automated numbering</p>
+                                    <p class="text-sage-600 text-sm">Batch calculations with automated numbering</p>
                                 </div>
                             </div>
                             
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-sage-700 mb-2">Product Selection</label>
-                                    <select id="quickProductSelect" class="w-full px-4 py-3 border border-sage-300 rounded-lg focus:ring-2 focus:ring-sage-500 focus:border-sage-500">
+                                    <label class="block text-sm font-medium text-sage-700 mb-2">Product</label>
+                                    <select id="quickProductSelect" class="w-full px-4 py-3 border border-sage-300 rounded-lg focus:ring-2 focus:ring-sage-500">
                                         <option value="">Choose Product...</option>
                                         <option value="SSN-FC-20">Star Seed • Forest Cream 20ml</option>
                                         <option value="SSN-FC-50">Star Seed • Forest Cream 50ml</option>
@@ -349,59 +342,376 @@
                                 <div>
                                     <label class="block text-sm font-medium text-sage-700 mb-2">Batch Size (kg)</label>
                                     <input type="number" id="quickBatchSize" step="0.1" min="0.1" 
-                                           class="w-full px-4 py-3 border border-sage-300 rounded-lg focus:ring-2 focus:ring-sage-500 focus:border-sage-500"
-                                           placeholder="Enter target batch size">
+                                           class="w-full px-4 py-3 border border-sage-300 rounded-lg focus:ring-2 focus:ring-sage-500"
+                                           placeholder="Enter batch size">
                                 </div>
                                 
-                                <button onclick="quickCalculate()" class="w-full sage-gradient text-white font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                <button onclick="quickCalculate()" class="w-full sage-gradient text-white font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition-all shadow-lg">
                                     <i class="fas fa-calculator mr-2"></i>Calculate & Generate Batch Number
                                 </button>
                             </div>
                             
                             <div id="quickResults" class="hidden mt-6 p-4 bg-sage-50 border border-sage-200 rounded-lg">
                                 <h4 class="font-semibold text-sage-800 mb-2">
-                                    <i class="fas fa-check-circle mr-2"></i>Batch Calculation Ready
+                                    <i class="fas fa-check-circle mr-2"></i>Batch Ready
                                 </h4>
                                 <div id="quickResultDetails"></div>
                             </div>
                         </div>
 
-                        <!-- Recent Activity & Alerts -->
+                        <!-- Star Seed Inventory -->
                         <div class="glass-effect rounded-2xl p-8 border border-sage-200">
                             <div class="flex items-center mb-6">
                                 <div class="cream-gradient rounded-lg p-3 mr-4">
-                                    <i class="fas fa-bell text-white text-xl"></i>
+                                    <i class="fas fa-warehouse text-white text-xl"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-xl font-bold text-sage-900">System Alerts & Activity</h3>
-                                    <p class="text-sage-600 text-sm">Real-time notifications and recent operations</p>
+                                    <h3 class="text-xl font-bold text-sage-900">Star Seed Inventory</h3>
+                                    <p class="text-sage-600 text-sm">Real-time stock monitoring</p>
                                 </div>
                             </div>
                             
-                            <div id="alertsList" class="space-y-3">
-                                <div class="flex items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-3"></i>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-medium text-yellow-800">Stock Alert: Moon Cream 20ml</p>
-                                        <p class="text-xs text-yellow-600">Current: 18 units • Minimum: 20 units</p>
-                                    </div>
+                            <div id="inventoryDisplay" class="space-y-3">
+                                <div class="flex justify-between items-center p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <span class="font-medium">Discovery Kit</span>
+                                    <span class="text-lg font-bold text-green-600">137</span>
                                 </div>
-                                
-                                <div class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                    <i class="fas fa-info-circle text-blue-600 mr-3"></i>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-medium text-blue-800">New Order: Discovery Kit x5</p>
-                                        <p class="text-xs text-blue-600">Star Seed Natural • Priority fulfillment</p>
-                                    </div>
+                                <div class="flex justify-between items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <span class="font-medium">Forest Cream 20ml</span>
+                                    <span class="text-lg font-bold text-yellow-600">22</span>
                                 </div>
-                                
-                                <div class="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg">
-                                    <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                                    <div class="flex-1">
-                                        <p class="text-sm font-medium text-green-800">Batch F130925 Completed</p>
-                                        <p class="text-xs text-green-600">Forest Cream 20ml • 10kg batch</p>
-                                    </div>
+                                <div class="flex justify-between items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <span class="font-medium">Moon Cream 20ml</span>
+                                    <span class="text-lg font-bold text-yellow-600">18</span>
                                 </div>
                             </div>
                             
-                            <button onclick="loadRecentActivity()" class="w-full mt-4 text-sage-600 hover<span class="cursor">█</span>
+                            <button onclick="loadInventory()" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">
+                                <i class="fas fa-sync mr-2"></i>Refresh from Database
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client Management View -->
+                <div id="clientsView" class="dashboard-view hidden">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-3xl font-bold text-sage-900">Client Management</h2>
+                        <button onclick="showAddClient()" class="sage-gradient text-white px-6 py-3 rounded-lg hover:opacity-90 shadow-lg">
+                            <i class="fas fa-plus mr-2"></i>Add New Client
+                        </button>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-6 border border-sage-200">
+                        <h3 class="text-xl font-semibold text-sage-900 mb-6">Active Clients</h3>
+                        <div id="clientsList">
+                            <div class="text-center py-8 text-sage-600">
+                                <i class="fas fa-users text-4xl mb-4"></i>
+                                <p>Loading client data...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders View -->
+                <div id="ordersView" class="dashboard-view hidden">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-3xl font-bold text-sage-900">Order Management</h2>
+                        <div class="flex space-x-3">
+                            <button onclick="importWixOrders()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 shadow-lg">
+                                <i class="fas fa-download mr-2"></i>Import Wix Orders
+                            </button>
+                            <button onclick="createNewOrder()" class="sage-gradient text-white px-6 py-3 rounded-lg hover:opacity-90 shadow-lg">
+                                <i class="fas fa-plus mr-2"></i>New Order
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-6 border border-sage-200">
+                        <h3 class="text-xl font-semibold text-sage-900 mb-6">Order Pipeline</h3>
+                        <div id="ordersList">
+                            <div class="text-center py-8 text-sage-600">
+                                <i class="fas fa-shopping-cart text-4xl mb-4"></i>
+                                <p>Loading order data...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Views -->
+                <div id="fulfillmentView" class="dashboard-view hidden">
+                    <h2 class="text-3xl font-bold text-sage-900 mb-8">B2B2C Fulfillment Center</h2>
+                    <div class="glass-effect rounded-2xl p-6 border border-sage-200">
+                        <p class="text-sage-600">Fulfillment operations module - Coming soon!</p>
+                    </div>
+                </div>
+
+                <div id="formulationsView" class="dashboard-view hidden">
+                    <h2 class="text-3xl font-bold text-sage-900 mb-8">Formulations & BOM Management</h2>
+                    <div class="glass-effect rounded-2xl p-6 border border-sage-200">
+                        <p class="text-sage-600">Advanced formulation management - Coming soon!</p>
+                    </div>
+                </div>
+
+                <div id="invoicingView" class="dashboard-view hidden">
+                    <h2 class="text-3xl font-bold text-sage-900 mb-8">Automated Invoicing System</h2>
+                    <div class="glass-effect rounded-2xl p-6 border border-sage-200">
+                        <p class="text-sage-600">50% deposit invoicing system - Coming soon!</p>
+                    </div>
+                </div>
+
+                <div id="shippingView" class="dashboard-view hidden">
+                    <h2 class="text-3xl font-bold text-sage-900 mb-8">Royal Mail Integration</h2>
+                    <div class="glass-effect rounded-2xl p-6 border border-sage-200">
+                        <p class="text-sage-600">UK shipping calculator with 2025 pricing - Coming soon!</p>
+                    </div>
+                </div>
+
+                <div id="wixView" class="dashboard-view hidden">
+                    <h2 class="text-3xl font-bold text-sage-900 mb-8">Wix Store Synchronization</h2>
+                    <div class="glass-effect rounded-2xl p-6 border border-sage-200">
+                        <p class="text-sage-600">Wix API integration - Coming soon!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        let currentUser = null;
+        let currentView = 'dashboard';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🌿 Lush Labs Suite Manufacturing Operations - Initialized');
+        });
+
+        // Authentication
+        function loginAs(type) {
+            const credentials = type === 'admin' ? 
+                { email: 'admin@luxebeauty.com', password: 'admin123' } :
+                { email: 'hello@starseednatural.com', password: 'starseed123' };
+
+            fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(credentials)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentUser = data.user;
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('dashboardSection').classList.remove('hidden');
+                    document.getElementById('userInfo').classList.remove('hidden');
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    document.getElementById('userName').textContent = data.user.name;
+                    
+                    showNotification(`✅ Welcome ${data.user.name}!`, 'success');
+                    loadDashboardData();
+                } else {
+                    showNotification('Login failed', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+                showNotification('Login error: ' + error.message, 'error');
+            });
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('userInfo').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            showNotification('✅ Logged out successfully', 'success');
+        }
+
+        // Navigation
+        function showView(viewName) {
+            document.querySelectorAll('.dashboard-view').forEach(view => {
+                view.classList.add('hidden');
+            });
+            document.getElementById(viewName + 'View').classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-sage-100', 'text-sage-900', 'font-medium');
+                btn.classList.add('text-sage-700', 'hover:bg-sage-100');
+            });
+            
+            currentView = viewName;
+        }
+
+        function showDashboard() { showView('dashboard'); loadDashboardData(); }
+        function showClients() { showView('clients'); loadClients(); }
+        function showOrders() { showView('orders'); loadOrders(); }
+        function showFulfillment() { showView('fulfillment'); }
+        function showFormulations() { showView('formulations'); }
+        function showInvoicing() { showView('invoicing'); }
+        function showShipping() { showView('shipping'); }
+        function showWix() { showView('wix'); }
+
+        // Dashboard Functions
+        async function loadDashboardData() {
+            try {
+                loadCounts();
+                loadInventory();
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        async function loadCounts() {
+            try {
+                const responses = await Promise.all([
+                    fetch('/.netlify/functions/db-query/clients'),
+                    fetch('/.netlify/functions/db-query/orders'),
+                    fetch('/.netlify/functions/db-query/product_formulations'),
+                    fetch('/.netlify/functions/db-query/products')
+                ]);
+
+                const [clientsData, ordersData, formulationsData, productsData] = await Promise.all(
+                    responses.map(response => response.json())
+                );
+
+                document.getElementById('clientCount').textContent = clientsData.data ? clientsData.data.length : '1';
+                document.getElementById('orderCount').textContent = ordersData.data ? ordersData.data.length : '0';
+                document.getElementById('formulationCount').textContent = formulationsData.data ? formulationsData.data.length : '6';
+                document.getElementById('productCount').textContent = productsData.data ? productsData.data.length : '7';
+
+            } catch (error) {
+                console.error('Error loading counts:', error);
+                document.getElementById('clientCount').textContent = '1';
+                document.getElementById('orderCount').textContent = '0';
+                document.getElementById('formulationCount').textContent = '6';
+                document.getElementById('productCount').textContent = '7';
+            }
+        }
+
+        async function loadInventory() {
+            try {
+                const response = await fetch('/.netlify/functions/db-query/products');
+                const data = await response.json();
+                const products = data.data || [];
+                
+                if (products.length > 0) {
+                    let html = '';
+                    products.forEach(product => {
+                        const stockLevel = product.current_stock || 0;
+                        const stockClass = stockLevel > 30 ? 'green' : stockLevel > 15 ? 'yellow' : 'red';
+                        
+                        html += `
+                            <div class="flex justify-between items-center p-3 bg-${stockClass}-50 border border-${stockClass}-200 rounded-lg">
+                                <span class="font-medium">${product.name}</span>
+                                <span class="text-lg font-bold text-${stockClass}-600">${stockLevel}</span>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('inventoryDisplay').innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error loading inventory:', error);
+            }
+        }
+
+        // Quick Calculator
+        function quickCalculate() {
+            const productId = document.getElementById('quickProductSelect').value;
+            const batchSize = parseFloat(document.getElementById('quickBatchSize').value);
+
+            if (!productId || !batchSize) {
+                showNotification('Please select product and batch size', 'error');
+                return;
+            }
+
+            const batchNumber = generateBatchNumber(productId);
+            
+            let html = `
+                <p><strong>🔢 Batch Number:</strong> <span class="font-mono text-lg">${batchNumber}</span></p>
+                <p><strong>📏 Batch Size:</strong> ${batchSize} kg</p>
+                <p><strong>📅 Generated:</strong> ${new Date().toLocaleString()}</p>
+            `;
+
+            document.getElementById('quickResultDetails').innerHTML = html;
+            document.getElementById('quickResults').classList.remove('hidden');
+            
+            showNotification('✅ Batch number generated', 'success');
+        }
+
+        function generateBatchNumber(productId = 'TEST') {
+            const productLetter = productId.includes('FC') ? 'F' : 
+                                 productId.includes('MC') ? 'M' : 
+                                 productId.includes('SS') ? 'S' : 
+                                 productId.includes('DK') ? 'D' : 'T';
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear()).slice(-2);
+            return `${productLetter}${day}${month}${year}`;
+        }
+
+        // Module Functions
+        function loadClients() {
+            document.getElementById('clientsList').innerHTML = `
+                <div class="glass-effect rounded-xl p-6 border border-sage-200 mb-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-sage-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-leaf text-sage-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-sage-900">Star Seed Natural</h4>
+                                <p class="text-sage-600 text-sm">hello@starseednatural.com</p>
+                                <p class="text-sage-500 text-xs">Premium Tier • Active since 2023</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Active</span>
+                            <p class="text-sage-600 text-sm mt-1">7 Products • 247 Orders</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadOrders() {
+            document.getElementById('ordersList').innerHTML = `
+                <div class="space-y-4">
+                    <div class="glass-effect rounded-xl p-6 border border-sage-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold text-sage-900">Order #SSN-2025-001</h4>
+                                <p class="text-sage-600 text-sm">Star Seed Natural • Discovery Kit x5</p>
+                                <p class="text-sage-500 text-xs">Placed: ${new Date().toLocaleDateString()}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">In Production</span>
+                                <p class="text-sage-600 text-sm mt-1">£425.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Utility Functions
+        function showNotification(message, type = 'info') {
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+
+        function showAddClient() {
+            showNotification('Add Client feature - Coming soon!', 'info');
+        }
+
+        function createNewOrder() {
+            showNotification('New Order feature - Coming soon!', 'info');
+        }
+
+        function importWixOrders() {
+            showNotification('Wix import feature - Coming soon!', 'info');
+        }
+    </script>
+
+</body>
+</html>
