@@ -1,0 +1,19 @@
+{
+  "name": "lush-labs-suite",
+  "version": "1.0.0",
+  "description": "Manufacturing Operations Management System for Star Seed Natural",
+  "main": "index.html",
+  "dependencies": {
+    "pg": "^8.11.3"
+  },
+  "keywords": [
+    "manufacturing",
+    "formulation",
+    "inventory",
+    "neon",
+    "postgresql",
+    "star-seed-natural"
+  ],
+  "author": "Lush Labs Suite",
+  "license": "MIT"
+}
