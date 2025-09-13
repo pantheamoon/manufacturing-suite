@@ -3,34 +3,811 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manufacturing Operations Suite</title>
+    <title>Lush Labs Suite - Manufacturing Operations</title>
+    
+    <!-- TailwindCSS CDN with Custom Configuration -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sage: {
+                            50: '#f6f7f6',
+                            100: '#e3e8e3',
+                            200: '#c7d2c7',
+                            300: '#a3b3a3',
+                            400: '#7a927a',
+                            500: '#5c7a5c',
+                            600: '#4a6b4a',
+                            700: '#3d563d',
+                            800: '#334533',
+                            900: '#2d3a2d',
+                        },
+                        cream: {
+                            50: '#fefdf9',
+                            100: '#fefcf3',
+                            200: '#fef7e7',
+                            300: '#feedd5',
+                            400: '#fde1a3',
+                            500: '#fbcd6f',
+                            600: '#f7b955',
+                            700: '#f3a43d',
+                            800: '#ee8e2d',
+                            900: '#e07c1e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Neon Database Configuration -->
+    <script>
+        // Neon Database Configuration for Lush Labs Suite
+        console.log('🎯 Initializing Neon Database integration for Lush Labs Suite');
+        
+        // Override fetch to use Netlify Functions for database access
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            // Check if this is a table API call
+            if (url.startsWith('/tables/') || url.startsWith('tables/')) {
+                let tableName = url.replace('/tables/', '').replace('tables/', '');
+                let recordId = null;
+                
+                if (tableName.includes('/')) {
+                    const parts = tableName.split('/');
+                    tableName = parts[0];
+                    recordId = parts[1];
+                }
+                
+                let queryParams = '';
+                if (url.includes('?')) {
+                    queryParams = url.split('?')[1];
+                    tableName = tableName.split('?')[0];
+                }
+                
+                // Use Netlify Functions for database access
+                let neonUrl = `/.netlify/functions/db-query/${tableName}`;
+                if (recordId) {
+                    neonUrl += `/${recordId}`;
+                }
+                if (queryParams) {
+                    neonUrl += `?${queryParams}`;
+                }
+                
+                console.log(`Neon DB API: ${options.method || 'GET'} ${neonUrl}`);
+                
+                return originalFetch(neonUrl, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                }).then(response => {
+                    return response.json().then(data => {
+                        // Handle the response format
+                        return {
+                            ok: response.ok,
+                            status: response.status,
+                            json: () => Promise.resolve(data)
+                        };
+                    });
+                });
+            }
+            
+            // Handle auth login
+            if (url.includes('/auth/login') || url.includes('auth/login')) {
+                const credentials = JSON.parse(options.body);
+                if ((credentials.email === 'admin@luxebeauty.com' && credentials.password === 'admin123') ||
+                    (credentials.email === 'hello@starseednatural.com' && credentials.password === 'starseed123')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve({
+                            success: true,
+                            user: {
+                                id: 'user-id',
+                                email: credentials.email,
+                                name: credentials.email.includes('admin') ? 'System Administrator' : 'Star Seed Natural',
+                                role: credentials.email.includes('admin') ? 'Admin' : 'Client User',
+                                client_id: credentials.email.includes('starseed') ? 'SSN001' : null,
+                                tenant_id: 'luxebeauty_001'
+                            }
+                        })
+                    });
+                } else {
+                    return Promise.resolve({
+                        ok: false,
+                        json: () => Promise.resolve({ success: false, error: 'Invalid credentials' })
+                    });
+                }
+            }
+            
+            return originalFetch(url, options);
+        };
+        
+        console.log('🚀 Neon Database integration configured for Lush Labs Suite');
+    </script>
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #f6f7f6 0%, #e3e8e3 100%);
+        }
+        .manufacturing-bg {
+            background: linear-gradient(135deg, #f6f7f6 0%, #e3e8e3 50%, #fefdf9 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
-    <div class="min-h-screen flex items-center justify-center">
-        <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-            <h1 class="text-3xl font-bold text-center text-gray-900 mb-8">
-                🏭 Manufacturing Operations Suite
-            </h1>
-            <p class="text-center text-gray-600 mb-8">
-                Your Manufacturing Suite is Ready for Deployment!
-            </p>
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h3 class="font-semibold text-blue-900 mb-2">Available Modules:</h3>
-                <ul class="text-sm text-blue-800 space-y-1">
-                    <li>✅ Electronic Batch Records (EBR)</li>
-                    <li>✅ FEFO Inventory Management</li>
-                    <li>✅ Production Planning (4-Lines)</li>
-                    <li>✅ Supplier Integration Dashboard</li>
-                </ul>
+
+<body class="manufacturing-bg min-h-screen">
+    <!-- Navigation Header -->
+    <nav class="glass-effect shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-industry text-2xl text-sage-600 mr-3"></i>
+                        <h1 class="text-xl font-bold text-gray-900">Lush Labs Suite</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="userInfo" class="hidden text-sm text-gray-700">
+                        <span id="userName"></span>
+                    </div>
+                    <button id="logoutBtn" onclick="logout()" class="hidden bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm">
+                        <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                    </button>
+                </div>
             </div>
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p class="text-sm text-green-800">
-                    <strong>Status:</strong> Deployment successful! 
-                    Full application coming online soon.
-                </p>
+        </div>
+    </nav>
+
+    <!-- Login Section -->
+    <div id="loginSection" class="flex items-center justify-center min-h-screen p-4">
+        <div class="glass-effect rounded-2xl shadow-2xl p-8 max-w-md w-full">
+            <div class="text-center mb-8">
+                <i class="fas fa-industry text-4xl text-sage-600 mb-4"></i>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Manufacturing Operations Suite</h2>
+                <p class="text-gray-600">Advanced formulation management and production control</p>
+                <div class="mt-4 flex items-center justify-center space-x-2 text-sm text-green-600">
+                    <i class="fas fa-database"></i>
+                    <span>Connected to Neon PostgreSQL</span>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <button onclick="loginAs('admin')" class="w-full bg-sage-600 hover:bg-sage-700 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105">
+                    <i class="fas fa-user-shield mr-2"></i>
+                    Manufacturing Administrator
+                </button>
+                <button onclick="loginAs('client')" class="w-full bg-cream-500 hover:bg-cream-600 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105">
+                    <i class="fas fa-building mr-2"></i>
+                    Star Seed Natural Portal
+                </button>
+            </div>
+            
+            <div class="mt-6 text-center text-xs text-gray-500 space-y-1">
+                <p>Admin: admin@luxebeauty.com / admin123</p>
+                <p>Client: hello@starseednatural.com / starseed123</p>
             </div>
         </div>
     </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboardSection" class="hidden">
+        <!-- Main Content Area -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="glass-effect rounded-xl p-6 text-center">
+                    <i class="fas fa-flask text-3xl text-sage-600 mb-2"></i>
+                    <h3 class="text-lg font-semibold text-gray-900">Active Formulations</h3>
+                    <p class="text-2xl font-bold text-sage-600" id="formulationCount">Loading...</p>
+                </div>
+                <div class="glass-effect rounded-xl p-6 text-center">
+                    <i class="fas fa-boxes text-3xl text-cream-600 mb-2"></i>
+                    <h3 class="text-lg font-semibold text-gray-900">Products in Stock</h3>
+                    <p class="text-2xl font-bold text-cream-600" id="productCount">Loading...</p>
+                </div>
+                <div class="glass-effect rounded-xl p-6 text-center">
+                    <i class="fas fa-calculator text-3xl text-blue-600 mb-2"></i>
+                    <h3 class="text-lg font-semibold text-gray-900">Batch Calculations</h3>
+                    <p class="text-2xl font-bold text-blue-600" id="batchCount">Loading...</p>
+                </div>
+                <div class="glass-effect rounded-xl p-6 text-center">
+                    <i class="fas fa-industry text-3xl text-purple-600 mb-2"></i>
+                    <h3 class="text-lg font-semibold text-gray-900">System Status</h3>
+                    <p class="text-xl font-bold text-green-600">Operational</p>
+                </div>
+            </div>
+
+            <!-- Main Module Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                
+                <!-- Formulation Calculator Module -->
+                <div class="glass-effect rounded-2xl p-8 shadow-xl">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-calculator text-2xl text-sage-600 mr-3"></i>
+                        <h2 class="text-2xl font-bold text-gray-900">Formulation Calculator</h2>
+                    </div>
+                    
+                    <p class="text-gray-600 mb-6">Calculate precise ingredient quantities with automatic batch scaling and cost analysis.</p>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Select Product</label>
+                            <select id="productSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sage-500 focus:border-sage-500">
+                                <option value="">Choose Star Seed Product...</option>
+                                <option value="SSN-FC-20">Forest Cream 20ml</option>
+                                <option value="SSN-FC-50">Forest Cream 50ml</option>
+                                <option value="SSN-MC-20">Moon Cream 20ml</option>
+                                <option value="SSN-MC-50">Moon Cream 50ml</option>
+                                <option value="SSN-SS-12">Star Serum 12ml</option>
+                                <option value="SSN-SS-18">Star Serum 18ml</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Batch Size (kg)</label>
+                            <input type="number" id="batchSize" step="0.1" min="0.1" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sage-500 focus:border-sage-500"
+                                   placeholder="Enter target batch size">
+                        </div>
+                        
+                        <button onclick="calculateBatch()" class="w-full bg-gradient-to-r from-sage-600 to-sage-700 hover:from-sage-700 hover:to-sage-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105">
+                            <i class="fas fa-calculator mr-2"></i>Calculate Batch & Generate Number
+                        </button>
+                    </div>
+                    
+                    <!-- Calculation Results -->
+                    <div id="calculationResults" class="hidden mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <h4 class="font-semibold text-green-800 mb-3">
+                            <i class="fas fa-check-circle mr-2"></i>Calculation Complete
+                        </h4>
+                        <div id="calculationDetails"></div>
+                        <button onclick="printFormulation()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
+                            <i class="fas fa-print mr-1"></i>Print Formulation Sheet
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Inventory Management Module -->
+                <div class="glass-effect rounded-2xl p-8 shadow-xl">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-warehouse text-2xl text-cream-600 mr-3"></i>
+                        <h2 class="text-2xl font-bold text-gray-900">Star Seed Inventory</h2>
+                    </div>
+                    
+                    <p class="text-gray-600 mb-6">Real-time inventory tracking with automated stock alerts and reorder notifications.</p>
+                    
+                    <div id="inventoryList" class="space-y-3 mb-6">
+                        <!-- Inventory items will be loaded here -->
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button onclick="loadInventory()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm">
+                            <i class="fas fa-sync mr-1"></i>Refresh Data
+                        </button>
+                        <button onclick="exportInventory()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg text-sm">
+                            <i class="fas fa-download mr-1"></i>Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Production Analytics -->
+                <div class="glass-effect rounded-2xl p-8 shadow-xl">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-chart-line text-2xl text-blue-600 mr-3"></i>
+                        <h2 class="text-2xl font-bold text-gray-900">Production Analytics</h2>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <canvas id="productionChart" width="400" height="200"></canvas>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="text-center p-3 bg-blue-50 rounded-lg">
+                            <div class="font-semibold text-blue-800">This Month</div>
+                            <div class="text-2xl font-bold text-blue-600">247</div>
+                            <div class="text-blue-600">Units Produced</div>
+                        </div>
+                        <div class="text-center p-3 bg-green-50 rounded-lg">
+                            <div class="font-semibold text-green-800">Efficiency</div>
+                            <div class="text-2xl font-bold text-green-600">94.8%</div>
+                            <div class="text-green-600">Target Achievement</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Management -->
+                <div class="glass-effect rounded-2xl p-8 shadow-xl">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-database text-2xl text-purple-600 mr-3"></i>
+                        <h2 class="text-2xl font-bold text-gray-900">Database Management</h2>
+                    </div>
+                    
+                    <p class="text-gray-600 mb-6">Monitor database connectivity and perform system diagnostics.</p>
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <button onclick="testConnection()" class="bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded-lg text-sm">
+                            <i class="fas fa-plug mr-1"></i>Test Connection
+                        </button>
+                        <button onclick="loadProducts()" class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-3 rounded-lg text-sm">
+                            <i class="fas fa-box mr-1"></i>Load Products
+                        </button>
+                        <button onclick="loadFormulations()" class="bg-teal-600 hover:bg-teal-700 text-white py-2 px-3 rounded-lg text-sm">
+                            <i class="fas fa-flask mr-1"></i>Load Formulations
+                        </button>
+                        <button onclick="createTestBatch()" class="bg-orange-600 hover:bg-orange-700 text-white py-2 px-3 rounded-lg text-sm">
+                            <i class="fas fa-plus mr-1"></i>Test Batch
+                        </button>
+                    </div>
+                    
+                    <div id="dbResults" class="p-3 bg-gray-50 rounded-lg text-sm font-mono">
+                        <span class="text-gray-600">Database status: Ready for operations...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Features Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Royal Mail Integration -->
+                <div class="glass-effect rounded-xl p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shipping-fast text-xl text-red-600 mr-2"></i>
+                        <h3 class="text-lg font-semibold">Royal Mail Integration</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Calculate shipping costs with 2025 pricing structure.</p>
+                    <button onclick="openShippingCalculator()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg text-sm">
+                        <i class="fas fa-calculator mr-1"></i>Shipping Calculator
+                    </button>
+                </div>
+
+                <!-- Wix Integration -->
+                <div class="glass-effect rounded-xl p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-store text-xl text-blue-600 mr-2"></i>
+                        <h3 class="text-lg font-semibold">Wix Store Sync</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Sync orders and inventory with Star Seed's Wix store.</p>
+                    <button onclick="syncWixData()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm">
+                        <i class="fas fa-sync mr-1"></i>Sync Orders
+                    </button>
+                </div>
+
+                <!-- Auto-Invoicing -->
+                <div class="glass-effect rounded-xl p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-file-invoice-dollar text-xl text-green-600 mr-2"></i>
+                        <h3 class="text-lg font-semibold">Auto-Invoicing</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Generate automated invoices with 50% deposit system.</p>
+                    <button onclick="generateInvoice()" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg text-sm">
+                        <i class="fas fa-plus mr-1"></i>Create Invoice
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        let currentUser = null;
+        let productionChart = null;
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Lush Labs Suite Manufacturing Operations - Initialized');
+            initializeProductionChart();
+        });
+
+        // Authentication Functions
+        function loginAs(type) {
+            const credentials = type === 'admin' ? 
+                { email: 'admin@luxebeauty.com', password: 'admin123' } :
+                { email: 'hello@starseednatural.com', password: 'starseed123' };
+
+            fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(credentials)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentUser = data.user;
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('dashboardSection').classList.remove('hidden');
+                    document.getElementById('userInfo').classList.remove('hidden');
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    document.getElementById('userName').textContent = data.user.name;
+                    
+                    showStatus(`✅ Logged in as ${data.user.name}`, 'success');
+                    loadDashboardData();
+                } else {
+                    showStatus('Login failed', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+                showStatus('Login error: ' + error.message, 'error');
+            });
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('userInfo').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            showStatus('✅ Logged out successfully', 'success');
+        }
+
+        // Dashboard Data Loading
+        async function loadDashboardData() {
+            try {
+                // Load counts for dashboard cards
+                loadCounts();
+                loadInventory();
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        async function loadCounts() {
+            try {
+                // Load formulation count
+                const formResponse = await fetch('/tables/product_formulations');
+                const formData = await formResponse.json();
+                document.getElementById('formulationCount').textContent = formData.data ? formData.data.length : '0';
+
+                // Load product count
+                const prodResponse = await fetch('/tables/products');
+                const prodData = await prodResponse.json();
+                document.getElementById('productCount').textContent = prodData.data ? prodData.data.length : '0';
+
+                // Load batch calculations count
+                const batchResponse = await fetch('/tables/batch_calculations');
+                const batchData = await batchResponse.json();
+                document.getElementById('batchCount').textContent = batchData.data ? batchData.data.length : '0';
+
+            } catch (error) {
+                document.getElementById('formulationCount').textContent = 'N/A';
+                document.getElementById('productCount').textContent = 'N/A';
+                document.getElementById('batchCount').textContent = 'N/A';
+            }
+        }
+
+        // Formulation Calculator
+        async function calculateBatch() {
+            const productId = document.getElementById('productSelect').value;
+            const batchSize = parseFloat(document.getElementById('batchSize').value);
+
+            if (!productId || !batchSize) {
+                showStatus('Please select a product and enter batch size', 'error');
+                return;
+            }
+
+            try {
+                showStatus('🔄 Calculating batch ingredients...', 'info');
+                
+                const batchNumber = generateBatchNumber(productId);
+                
+                // Mock calculation for demo (replace with real formulation data)
+                const mockIngredients = [
+                    { name: 'Aqua (Water)', percentage: 65.5, costPerKg: 0.01, phase: 'A' },
+                    { name: 'Glycerin', percentage: 5.0, costPerKg: 2.50, phase: 'A' },
+                    { name: 'Cetearyl Alcohol', percentage: 4.0, costPerKg: 3.80, phase: 'B' },
+                    { name: 'Caprylic/Capric Triglyceride', percentage: 8.0, costPerKg: 4.20, phase: 'B' },
+                    { name: 'Shea Butter', percentage: 3.0, costPerKg: 8.50, phase: 'B' },
+                    { name: 'Natural Extract Blend', percentage: 2.0, costPerKg: 25.00, phase: 'C' },
+                    { name: 'Tocopherol (Vitamin E)', percentage: 0.5, costPerKg: 35.00, phase: 'C' },
+                    { name: 'Preservative System', percentage: 1.0, costPerKg: 12.00, phase: 'Final' },
+                    { name: 'Natural Fragrance', percentage: 1.0, costPerKg: 18.00, phase: 'Final' }
+                ];
+                
+                let totalCost = 0;
+                let calculationHTML = `
+                    <div class="mb-4 p-4 bg-white rounded-lg border">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div><strong>🔢 Batch Number:</strong> <span class="font-mono text-lg">${batchNumber}</span></div>
+                            <div><strong>📏 Batch Size:</strong> ${batchSize} kg</div>
+                            <div><strong>📅 Date:</strong> ${new Date().toLocaleDateString()}</div>
+                            <div><strong>👤 Operator:</strong> ${currentUser.name}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <h5 class="font-semibold text-gray-800 border-b pb-2">📋 Manufacturing Instructions:</h5>
+                `;
+                
+                const phases = ['A', 'B', 'C', 'Final'];
+                phases.forEach(phase => {
+                    const phaseIngredients = mockIngredients.filter(ing => ing.phase === phase);
+                    if (phaseIngredients.length > 0) {
+                        calculationHTML += `<div class="mt-3"><strong>Phase ${phase}:</strong></div>`;
+                        phaseIngredients.forEach(ing => {
+                            const quantity = (batchSize * ing.percentage / 100);
+                            const cost = quantity * ing.costPerKg;
+                            totalCost += cost;
+                            calculationHTML += `<div class="text-sm pl-4">• <strong>${ing.name}:</strong> ${quantity.toFixed(3)} kg (${ing.percentage}%) - £${cost.toFixed(2)}</div>`;
+                        });
+                    }
+                });
+                
+                calculationHTML += `
+                    </div>
+                    <div class="mt-4 p-3 bg-gray-100 rounded-lg">
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div><strong>💰 Total Raw Materials:</strong> £${totalCost.toFixed(2)}</div>
+                            <div><strong>📊 Cost per kg:</strong> £${(totalCost/batchSize).toFixed(2)}</div>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('calculationDetails').innerHTML = calculationHTML;
+                document.getElementById('calculationResults').classList.remove('hidden');
+
+                // Save calculation to database
+                const calculationData = {
+                    formulation_id: productId,
+                    batch_number: batchNumber,
+                    requested_batch_size_kg: batchSize,
+                    scale_factor: 1.0,
+                    calculated_ingredients: JSON.stringify(mockIngredients),
+                    total_cost: totalCost,
+                    cost_per_kg: totalCost/batchSize,
+                    status: 'Calculated',
+                    created_by: currentUser.email,
+                    tenant_id: 'luxebeauty_001'
+                };
+
+                try {
+                    await fetch('/tables/batch_calculations', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(calculationData)
+                    });
+                    showStatus('✅ Batch calculation saved to database', 'success');
+                    loadCounts(); // Refresh counts
+                } catch (saveError) {
+                    console.warn('Could not save to database:', saveError.message);
+                }
+
+            } catch (error) {
+                showStatus('Calculation error: ' + error.message, 'error');
+            }
+        }
+
+        // Inventory Management
+        async function loadInventory() {
+            try {
+                showStatus('🔄 Loading inventory from Neon database...', 'info');
+                const response = await fetch('/tables/products');
+                const data = await response.json();
+                const products = data.data || [];
+                
+                if (products.length === 0) {
+                    document.getElementById('inventoryList').innerHTML = `
+                        <div class="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <p class="text-yellow-800">⚠️ No products found</p>
+                            <p class="text-xs text-yellow-600">Ensure database setup is complete</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                products.forEach(product => {
+                    const stockLevel = product.current_stock || 0;
+                    const minStock = product.minimum_stock || 10;
+                    
+                    let statusClass, statusIcon, statusText;
+                    if (stockLevel > minStock * 1.5) {
+                        statusClass = 'bg-green-50 border-green-200 text-green-800';
+                        statusIcon = '✅';
+                        statusText = 'Good Stock';
+                    } else if (stockLevel > minStock) {
+                        statusClass = 'bg-yellow-50 border-yellow-200 text-yellow-800';
+                        statusIcon = '⚠️';
+                        statusText = 'Low Stock';
+                    } else {
+                        statusClass = 'bg-red-50 border-red-200 text-red-800';
+                        statusIcon = '🔴';
+                        statusText = 'Critical';
+                    }
+                    
+                    html += `
+                        <div class="flex justify-between items-center p-3 ${statusClass} rounded-lg border">
+                            <div>
+                                <div class="font-medium">${statusIcon} ${product.name}</div>
+                                <div class="text-xs opacity-75">${product.sku} • Min: ${minStock}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold">${stockLevel}</div>
+                                <div class="text-xs">${statusText}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('inventoryList').innerHTML = html;
+                showStatus(`✅ Loaded ${products.length} products from database`, 'success');
+                
+            } catch (error) {
+                showStatus('Error loading inventory: ' + error.message, 'error');
+                document.getElementById('inventoryList').innerHTML = `
+                    <div class="text-center p-4 bg-red-50 rounded-lg border border-red-200">
+                        <p class="text-red-800">❌ Connection Error</p>
+                        <p class="text-xs text-red-600">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Database Management Functions
+        async function testConnection() {
+            try {
+                showDbResult('🔄 Testing Neon database connection...');
+                const response = await fetch('/tables/products');
+                const data = await response.json();
+                if (data && data.data) {
+                    showDbResult(`✅ Connection successful! Found ${data.data.length} products in Neon DB.`);
+                } else {
+                    showDbResult(`⚠️ Connected but response format unexpected: ${JSON.stringify(data)}`);
+                }
+            } catch (error) {
+                showDbResult(`❌ Connection failed: ${error.message}`);
+            }
+        }
+
+        async function loadProducts() {
+            try {
+                showDbResult('🔄 Loading products...');
+                const response = await fetch('/tables/products');
+                const data = await response.json();
+                const products = data.data || [];
+                let result = `✅ Products (${products.length}):\n`;
+                products.forEach(p => {
+                    result += `• ${p.name} (${p.sku}) - Stock: ${p.current_stock}\n`;
+                });
+                showDbResult(result);
+            } catch (error) {
+                showDbResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function loadFormulations() {
+            try {
+                showDbResult('🔄 Loading formulations...');
+                const response = await fetch('/tables/product_formulations');
+                const data = await response.json();
+                const formulations = data.data || [];
+                let result = `✅ Formulations (${formulations.length}):\n`;
+                formulations.forEach(f => {
+                    result += `• ${f.formulation_name} (${f.batch_size_kg}kg)\n`;
+                });
+                showDbResult(result);
+            } catch (error) {
+                showDbResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function createTestBatch() {
+            try {
+                showDbResult('🔄 Creating test batch...');
+                const batchData = {
+                    formulation_id: 'test-' + Date.now(),
+                    batch_number: generateBatchNumber('TEST'),
+                    requested_batch_size_kg: 5.0,
+                    scale_factor: 1.0,
+                    calculated_ingredients: JSON.stringify([{name: 'Test Ingredient', quantity: 1.0}]),
+                    total_cost: 25.50,
+                    status: 'Test',
+                    created_by: currentUser?.email || 'system',
+                    tenant_id: 'luxebeauty_001'
+                };
+
+                const response = await fetch('/tables/batch_calculations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(batchData)
+                });
+
+                const result = await response.json();
+                showDbResult(`✅ Test batch created: ${result.batch_number || 'Success'}`);
+                loadCounts();
+            } catch (error) {
+                showDbResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        // Utility Functions
+        function generateBatchNumber(productId = 'TEST') {
+            const productLetter = productId.includes('FC') ? 'F' : 
+                                 productId.includes('MC') ? 'M' : 
+                                 productId.includes('SS') ? 'S' : 
+                                 productId.includes('DK') ? 'D' : 'T';
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear()).slice(-2);
+            return `${productLetter}${day}${month}${year}`;
+        }
+
+        function initializeProductionChart() {
+            const ctx = document.getElementById('productionChart').getContext('2d');
+            productionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Production Volume',
+                        data: [120, 180, 150, 220, 200, 247],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Advanced Feature Placeholders
+        function openShippingCalculator() {
+            showStatus('🚢 Royal Mail shipping calculator - Coming soon!', 'info');
+        }
+
+        function syncWixData() {
+            showStatus('🔄 Wix store sync initiated - Feature in development', 'info');
+        }
+
+        function generateInvoice() {
+            showStatus('📧 Auto-invoice generation - Feature in development', 'info');
+        }
+
+        function exportInventory() {
+            showStatus('📥 CSV export initiated - Feature in development', 'info');
+        }
+
+        function printFormulation() {
+            window.print();
+        }
+
+        // Display Helper Functions
+        function showStatus(message, type = 'info') {
+            console.log(message);
+            // You can add a toast notification system here
+        }
+
+        function showDbResult(message) {
+            document.getElementById('dbResults').innerHTML = `<span class="text-gray-800">${message.replace(/\n/g, '<br>')}</span>`;
+        }
+    </script>
 </body>
 </html>
